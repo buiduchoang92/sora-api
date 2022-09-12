@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  php-apache-environment:
+    container_name: sora_api
+    build:
+      context: ./php-apache2
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - ./api/:/var/www/html/
+    ports:
+      - 8000:80
+
+  mysql:
+    container_name: mysql
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql12345
+      MYSQL_DATABASE: sora_api
+      MYSQL_PASSWORD: mysql12345
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./mysql/sora_api.sql:/docker-entrypoint-initdb.d/dump.sql
+    # cap_add:
+    #   - SYS_NICE  # CAP_SYS_NICE
+  # flyway:
+  #   container_name: flyway
+  #   build:
+  #     context: ./migrations
+  #     dockerfile: Dockerfile
+  #   image: flyway/flyway:7.7.3
+  #   volumes:
+  #     - ${PWD}/migrations/sql:/flyway/sql
+  #   command: -url=jdbc:mysql://mysql/sora_api?useSSL=false&allowPublicKeyRetrieval=true -schemas=sora_api -user=root -password=mysql12345 -connectRetries=60 migrate
+  #   environment:
+  #     FLYWAY_BASELINE_ON_MIGRATE: 'true'
+  #     FLYWAY_BASELINE_VERSION: '0.0'
+  #   depends_on:
+  #     - mysql
